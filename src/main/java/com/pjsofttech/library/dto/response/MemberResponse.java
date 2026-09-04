@@ -1,0 +1,23 @@
+package com.pjsofttech.library.dto.response;
+
+import com.pjsofttech.library.model.MemberStatus;
+import lombok.Builder;
+import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+public class MemberResponse {
+    private Long id;
+    private Long userId;
+    private String userName;
+    private String userEmail;
+    private String membershipNumber;
+    private String phone;
+    private String address;
+    private LocalDate membershipDate;
+    private LocalDate membershipExpiryDate;
+    private MemberStatus status;
+    private LocalDateTime createdAt;
+}

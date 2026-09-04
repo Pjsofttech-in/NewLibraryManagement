@@ -1,0 +1,146 @@
+package com.pjsofttech.library.service.impl;
+
+import com.pjsofttech.library.dto.request.MemberRequest;
+import com.pjsofttech.library.dto.response.MemberResponse;
+import com.pjsofttech.library.exception.BusinessException;
+import com.pjsofttech.library.exception.DuplicateResourceException;
+import com.pjsofttech.library.exception.ResourceNotFoundException;
+import com.pjsofttech.library.model.Member;
+import com.pjsofttech.library.model.MemberStatus;
+import com.pjsofttech.library.model.User;
+import com.pjsofttech.library.repository.MemberRepository;
+import com.pjsofttech.library.repository.UserRepository;
+import com.pjsofttech.library.service.MemberService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class MemberServiceImpl implements MemberService {
+
+    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
+
+//    @Override
+//    @Transactional
+//    public MemberResponse register(MemberRequest request) {
+//        if (memberRepository.existsByUserId(request.getUserId())) {
+//            throw new DuplicateResourceException("User is already a member");
+//        }
+//        User user = userRepository.findById(request.getUserId())
+//                .orElseThrow(() -> new ResourceNotFoundException("User", request.getUserId()));
+//
+//        String membershipNumber = generateMembershipNumber();
+//
+//        Member member = Member.builder()
+//                .user(user)
+//                .membershipNumber(membershipNumber)
+//                .phone(request.getPhone())
+//                .address(request.getAddress())
+//                .membershipDate(LocalDate.now())
+//                .membershipExpiryDate(request.getMembershipExpiryDate())
+//                .status(MemberStatus.ACTIVE)
+//                .build();
+//
+//        Member saved = memberRepository.save(member);
+//        log.info("Member registered: membershipNumber={}, userId={}", saved.getMembershipNumber(), user.getId());
+//        return toResponse(saved);
+//    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MemberResponse getById(Long id) {
+        return toResponse(findById(id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MemberResponse getByUserId(Long userId) {
+        return toResponse(memberRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member for userId", userId)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MemberResponse getByMembershipNumber(String membershipNumber) {
+        return toResponse(memberRepository.findByMembershipNumber(membershipNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Member", "membershipNumber", membershipNumber)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberResponse> getAll(Pageable pageable) {
+        return memberRepository.findAll(pageable).map(this::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberResponse> search(String keyword, Pageable pageable) {
+        return memberRepository.searchMembers(keyword, pageable).map(this::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public MemberResponse update(Long id, MemberRequest request) {
+        Member member = findById(id);
+        member.setPhone(request.getPhone());
+        member.setAddress(request.getAddress());
+        member.setMembershipExpiryDate(request.getMembershipExpiryDate());
+        return toResponse(memberRepository.save(member));
+    }
+
+    @Override
+    @Transactional
+    public MemberResponse updateStatus(Long id, MemberStatus status) {
+        Member member = findById(id);
+        member.setStatus(status);
+        log.info("Member status updated: id={}, status={}", id, status);
+        return toResponse(memberRepository.save(member));
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        memberRepository.delete(findById(id));
+        log.info("Member deleted: id={}", id);
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private Member findById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member", id));
+    }
+
+    private String generateMembershipNumber() {
+        String number;
+        do {
+            number = "LIB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        } while (memberRepository.existsByMembershipNumber(number));
+        return number;
+    }
+
+    public MemberResponse toResponse(Member m) {
+        return MemberResponse.builder()
+                .id(m.getId())
+                .userId(m.getUser().getId())
+                .userName(m.getUser().getName())
+                .userEmail(m.getUser().getEmail())
+                .membershipNumber(m.getMembershipNumber())
+                .phone(m.getPhone())
+                .address(m.getAddress())
+                .membershipDate(m.getMembershipDate())
+                .membershipExpiryDate(m.getMembershipExpiryDate())
+                .status(m.getStatus())
+                .createdAt(m.getCreatedAt())
+                .build();
+    }
+}
