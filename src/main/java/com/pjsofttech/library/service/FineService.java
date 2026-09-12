@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 
 public interface FineService {
-    void createFine(Loan loan, int overdueDays);
+    void createFine(Loan loan);
     FineResponse getById(Long id);
     FineResponse getByLoanId(Long loanId);
     Page<FineResponse> getAll(Pageable pageable);

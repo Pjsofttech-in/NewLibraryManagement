@@ -137,15 +137,17 @@ public class LoanServiceImpl implements LoanService {
         bookRepository.save(book);
 
         // Calculate fine if overdue
-        long overdueDays = ChronoUnit.DAYS.between(loan.getDueDate(), today);
-        if (overdueDays > 0) {
-            fineService.createFine(loan, (int) overdueDays);
+        if (loan.getDueDate() != null &&
+                loan.getDueDate().isBefore(today)) {
+
+            fineService.createFine(loan);
         }
+
 
         // Handle pending reservations: notify next member in queue
         fineService.notifyNextReservation(book.getId());
 
-        log.info("Book returned: loanId={}, overdueDays={}", loanId, Math.max(0, overdueDays));
+        log.info("Book returned: loanId={}", loanId);
         return toResponse(loan);
     }
 
@@ -217,6 +219,13 @@ public class LoanServiceImpl implements LoanService {
 
     public LoanResponse toResponse(Loan l) {
         Book book = l.getBookCopy().getBook();
+        LoanStatus status = l.getStatus();
+
+        if (status == LoanStatus.ACTIVE
+                && l.getDueDate() != null
+                && l.getDueDate().isBefore(LocalDate.now())) {
+            status = LoanStatus.OVERDUE;
+        }
         return LoanResponse.builder()
                 .id(l.getId())
                 .memberId(l.getMember().getId())
@@ -229,7 +238,7 @@ public class LoanServiceImpl implements LoanService {
                 .issueDate(l.getIssueDate())
                 .dueDate(l.getDueDate())
                 .returnDate(l.getReturnDate())
-                .status(l.getStatus())
+                .status(status)
                 .renewedCount(l.getRenewedCount())
                 .issuedBy(l.getIssuedBy())
                 .createdAt(l.getCreatedAt())

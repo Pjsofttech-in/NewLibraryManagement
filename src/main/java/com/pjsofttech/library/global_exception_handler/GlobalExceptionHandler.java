@@ -1,6 +1,7 @@
 package com.pjsofttech.library.global_exception_handler;
 
 import com.pjsofttech.library.exception.*;
+import com.pjsofttech.library.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParam(
+    public ResponseEntity<?> handleMissingParam(
             MissingServletRequestParameterException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "MISSING_PARAMETER",
                 "Required parameter '" + ex.getParameterName() + "' is missing", request);

@@ -11,6 +11,7 @@ import com.pjsofttech.library.service.FineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
@@ -34,22 +36,74 @@ public class FineServiceImpl implements FineService {
 
     @Override
     @Transactional
-    public void createFine(Loan loan, int overdueDays) {
-        // Idempotent: don't create duplicate fines
-        if (fineRepository.findByLoanId(loan.getId()).isPresent()) {
+    public void createFine(Loan loan) {
+        LocalDate today = LocalDate.now();
+        if (loan.getDueDate() == null || !loan.getDueDate().isBefore(today)) {
             return;
         }
-        BigDecimal total = finePerDay.multiply(BigDecimal.valueOf(overdueDays));
+
+        long overdueDays = ChronoUnit.DAYS.between(
+                loan.getDueDate(),
+                today
+        );
+
+        if (overdueDays <= 0) {
+            return;
+        }
+        Optional<Fine> existingFine = fineRepository.findByLoanId(loan.getId());
+
+        if (existingFine.isPresent()) {
+            Fine fine = existingFine.get();
+
+            // Update dynamically
+            fine.setOverdueDays((int) overdueDays);
+            fine.setFinePerDay(finePerDay);
+            fine.setTotalAmount(
+                    finePerDay.multiply(BigDecimal.valueOf(overdueDays))
+            );
+
+            fineRepository.save(fine);
+
+            return;
+        }
+        BigDecimal total = finePerDay.multiply(
+                BigDecimal.valueOf(overdueDays)
+        );
         Fine fine = Fine.builder()
                 .loan(loan)
-                .overdueDays(overdueDays)
+                .overdueDays((int) overdueDays)
                 .finePerDay(finePerDay)
                 .totalAmount(total)
                 .status(FineStatus.PENDING)
                 .build();
+
         fineRepository.save(fine);
-        log.info("Fine created: loanId={}, overdueDays={}, total={}", loan.getId(), overdueDays, total);
+        log.info(
+                "Fine created: loanId={}, overdueDays={}, total={}",
+                loan.getId(),
+                overdueDays,
+                total
+        );
     }
+
+//    @Override
+//    @Transactional
+//    public void createFine(Loan loan, int overdueDays) {
+//        // Idempotent: don't create duplicate fines
+//        if (fineRepository.findByLoanId(loan.getId()).isPresent()) {
+//            return;
+//        }
+//        BigDecimal total = finePerDay.multiply(BigDecimal.valueOf(overdueDays));
+//        Fine fine = Fine.builder()
+//                .loan(loan)
+//                .overdueDays(overdueDays)
+//                .finePerDay(finePerDay)
+//                .totalAmount(total)
+//                .status(FineStatus.PENDING)
+//                .build();
+//        fineRepository.save(fine);
+//        log.info("Fine created: loanId={}, overdueDays={}, total={}", loan.getId(), overdueDays, total);
+//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -145,6 +199,24 @@ public class FineServiceImpl implements FineService {
         Loan loan = f.getLoan();
         Member member = loan.getMember();
         BookCopy copy = loan.getBookCopy();
+        int overdueDays = f.getOverdueDays();
+        BigDecimal totalAmount = f.getTotalAmount();
+
+        // Dynamically calculate current overdue amount
+        if (f.getStatus() == FineStatus.PENDING
+                && loan.getDueDate() != null
+                && loan.getDueDate().isBefore(LocalDate.now())) {
+
+            overdueDays = (int) ChronoUnit.DAYS.between(
+                    loan.getDueDate(),
+                    LocalDate.now()
+            );
+
+            totalAmount = finePerDay.multiply(
+                    BigDecimal.valueOf(overdueDays)
+            );
+        }
+
         return FineResponse.builder()
                 .id(f.getId())
                 .loanId(loan.getId())
@@ -152,9 +224,9 @@ public class FineServiceImpl implements FineService {
                 .membershipNumber(member.getMembershipNumber())
                 .bookTitle(copy.getBook().getTitle())
                 .barcode(copy.getBarcode())
-                .overdueDays(f.getOverdueDays())
-                .finePerDay(f.getFinePerDay())
-                .totalAmount(f.getTotalAmount())
+                .overdueDays(overdueDays)
+                .finePerDay(finePerDay)
+                .totalAmount(totalAmount)
                 .status(f.getStatus())
                 .paidAt(f.getPaidAt())
                 .waivedBy(f.getWaivedBy())
