@@ -55,4 +55,8 @@ public class BookCopy {
     @OneToMany(mappedBy = "bookCopy", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Loan> loans = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rack_id", nullable = false)
+    private Rack rack;
 }

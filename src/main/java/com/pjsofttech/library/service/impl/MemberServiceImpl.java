@@ -1,5 +1,6 @@
 package com.pjsofttech.library.service.impl;
 
+import com.pjsofttech.library.dto.request.CreateMemberAdminRequest;
 import com.pjsofttech.library.dto.request.MemberRequest;
 import com.pjsofttech.library.dto.response.MemberResponse;
 import com.pjsofttech.library.exception.BusinessException;
@@ -7,14 +8,17 @@ import com.pjsofttech.library.exception.DuplicateResourceException;
 import com.pjsofttech.library.exception.ResourceNotFoundException;
 import com.pjsofttech.library.model.Member;
 import com.pjsofttech.library.model.MemberStatus;
+import com.pjsofttech.library.model.Role;
 import com.pjsofttech.library.model.User;
 import com.pjsofttech.library.repository.MemberRepository;
 import com.pjsofttech.library.repository.UserRepository;
 import com.pjsofttech.library.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +32,8 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 //    @Override
 //    @Transactional
@@ -113,6 +119,39 @@ public class MemberServiceImpl implements MemberService {
         log.info("Member deleted: id={}", id);
     }
 
+    @Override
+    public MemberResponse registerMember(CreateMemberAdminRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .dateOfBirth(request.getDateOfBirth())
+                .role(Role.MEMBER)       // IMPORTANT
+                .active(true)
+                .build();
+
+        userRepository.save(user);
+
+        Member member = Member.builder()
+                .user(user)
+                .phone(request.getPhone())
+                .address(request.getAddress())
+                .academicYear(request.getAcademicYear())
+                .membershipNumber(generateMembershipNumber())
+                .membershipDate(LocalDate.now())
+                .membershipExpiryDate(LocalDate.now().plusYears(1))
+                .status(MemberStatus.ACTIVE)
+                .build();
+
+        memberRepository.save(member);
+
+        return toResponse(member);
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private Member findById(Long id) {
@@ -137,6 +176,7 @@ public class MemberServiceImpl implements MemberService {
                 .membershipNumber(m.getMembershipNumber())
                 .phone(m.getPhone())
                 .address(m.getAddress())
+                .academicYear(m.getAcademicYear())
                 .membershipDate(m.getMembershipDate())
                 .membershipExpiryDate(m.getMembershipExpiryDate())
                 .status(m.getStatus())

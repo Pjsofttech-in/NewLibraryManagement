@@ -36,6 +36,10 @@ public class Member {
     @Column(name = "address", length = 300)
     private String address;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academic_year_id", nullable = false)
+    private AcademicYear academicYear;
+
     @Column(name = "membership_date", nullable = false)
     private LocalDate membershipDate;
 

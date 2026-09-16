@@ -1,7 +1,5 @@
 package com.pjsofttech.library.model;
-
 import lombok.Getter;
-
 import java.util.Set;
 
 @Getter
@@ -61,7 +59,19 @@ ADMIN(Set.of(
 
         // System
         Permissions.SYSTEM_SETTINGS,
-        Permissions.AUDIT_LOG_READ
+        Permissions.AUDIT_LOG_READ,
+
+        //AcademicYear
+        Permissions.ACADEMIC_YEAR_CREATE,
+        Permissions.ACADEMIC_YEAR_READ,
+        Permissions.ACADEMIC_YEAR_UPDATE,
+
+
+        //Rack
+        Permissions.RACK_CREATE,
+        Permissions.RACK_DELETE,
+        Permissions.RACK_READ,
+        Permissions.RACK_UPDATE
 )),
     LIBRARIAN(Set.of(
 
@@ -103,7 +113,18 @@ ADMIN(Set.of(
             Permissions.FINE_WAIVE,
 
             // Reports
-            Permissions.REPORT_VIEW
+            Permissions.REPORT_VIEW,
+
+            //AcademicYear
+            Permissions.ACADEMIC_YEAR_CREATE,
+            Permissions.ACADEMIC_YEAR_READ,
+            Permissions.ACADEMIC_YEAR_UPDATE,
+
+
+            //Rack
+            Permissions.RACK_CREATE,
+            Permissions.RACK_READ,
+            Permissions.RACK_UPDATE
     )),
 
 
@@ -126,7 +147,12 @@ ADMIN(Set.of(
 
             // Own fines
             Permissions.FINE_READ,
-            Permissions.FINE_PAY
+            Permissions.FINE_PAY,
+
+            //AcademicYear
+            Permissions.ACADEMIC_YEAR_READ,
+            //Rack
+            Permissions.RACK_READ
     ));
 
     private final Set<Permissions> permissions;

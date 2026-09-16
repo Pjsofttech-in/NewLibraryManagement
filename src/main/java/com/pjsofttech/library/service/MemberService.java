@@ -1,5 +1,6 @@
 package com.pjsofttech.library.service;
 
+import com.pjsofttech.library.dto.request.CreateMemberAdminRequest;
 import com.pjsofttech.library.dto.request.MemberRequest;
 import com.pjsofttech.library.dto.response.MemberResponse;
 import com.pjsofttech.library.model.MemberStatus;
@@ -16,4 +17,5 @@ public interface MemberService {
     MemberResponse update(Long id, MemberRequest request);
     MemberResponse updateStatus(Long id, MemberStatus status);
     void delete(Long id);
+    MemberResponse registerMember(CreateMemberAdminRequest request);
 }

@@ -231,6 +231,7 @@ public class LoanServiceImpl implements LoanService {
                 .memberId(l.getMember().getId())
                 .memberName(l.getMember().getUser().getName())
                 .membershipNumber(l.getMember().getMembershipNumber())
+                .academicYear(l.getAcademicYear())
                 .bookCopyId(l.getBookCopy().getId())
                 .barcode(l.getBookCopy().getBarcode())
                 .bookTitle(book.getTitle())

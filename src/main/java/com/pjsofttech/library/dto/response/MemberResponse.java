@@ -1,5 +1,6 @@
 package com.pjsofttech.library.dto.response;
 
+import com.pjsofttech.library.model.AcademicYear;
 import com.pjsofttech.library.model.MemberStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class MemberResponse {
     private String membershipNumber;
     private String phone;
     private String address;
+    private AcademicYear academicYear;
     private LocalDate membershipDate;
     private LocalDate membershipExpiryDate;
     private MemberStatus status;

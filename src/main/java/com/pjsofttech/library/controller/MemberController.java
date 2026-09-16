@@ -1,5 +1,6 @@
 package com.pjsofttech.library.controller;
 
+import com.pjsofttech.library.dto.request.CreateMemberAdminRequest;
 import com.pjsofttech.library.dto.request.MemberRequest;
 import com.pjsofttech.library.model.MemberStatus;
 import com.pjsofttech.library.service.MemberService;
@@ -25,13 +26,13 @@ public class MemberController {
 
     private final MemberService memberService;
 
-//    @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
-//    @Operation(summary = "Register a user as a library member (ADMIN/LIBRARIAN)")
-//    public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody MemberRequest request) {
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//                .body(ApiResponse.success("Member registered successfully", memberService.register(request)));
-//    }
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
+    @Operation(summary = "Register a user as a library member (ADMIN/LIBRARIAN)")
+    public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody CreateMemberAdminRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Member registered successfully", memberService.registerMember(request)));
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")

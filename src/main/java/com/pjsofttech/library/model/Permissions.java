@@ -67,5 +67,18 @@ USER_READ,
     // SYSTEM / ADMINISTRATION
     // =========================
     SYSTEM_SETTINGS,
-    AUDIT_LOG_READ
+    AUDIT_LOG_READ,
+
+    //Academic Year
+    ACADEMIC_YEAR_CREATE,
+    ACADEMIC_YEAR_READ,
+    ACADEMIC_YEAR_UPDATE,
+
+
+    //RACK
+    RACK_CREATE,
+    RACK_READ,
+    RACK_UPDATE,
+    RACK_DELETE
+
 }

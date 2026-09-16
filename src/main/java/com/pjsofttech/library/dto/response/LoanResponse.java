@@ -1,5 +1,6 @@
 package com.pjsofttech.library.dto.response;
 
+import com.pjsofttech.library.model.AcademicYear;
 import com.pjsofttech.library.model.LoanStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ public class LoanResponse {
     private Long memberId;
     private String memberName;
     private String membershipNumber;
+    private AcademicYear academicYear;
     private Long bookCopyId;
     private String barcode;
     private String bookTitle;

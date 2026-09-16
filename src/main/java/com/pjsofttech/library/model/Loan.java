@@ -33,6 +33,10 @@ public class Loan {
     @JoinColumn(name = "book_copy_id", nullable = false)
     private BookCopy bookCopy;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academic_year_id", nullable = false)
+    private AcademicYear academicYear;
+
     @Column(name = "issue_date", nullable = false)
     private LocalDate issueDate;
 

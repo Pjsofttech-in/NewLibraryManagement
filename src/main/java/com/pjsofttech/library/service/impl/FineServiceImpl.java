@@ -27,10 +27,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class FineServiceImpl implements FineService {
-
     private final FineRepository fineRepository;
     private final ReservationRepository reservationRepository;
-
     @Value("${library.fine.per-day:5.00}")
     private BigDecimal finePerDay;
 
