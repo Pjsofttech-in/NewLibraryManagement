@@ -4,6 +4,8 @@ import com.pjsofttech.library.model.AcademicYear;
 import com.pjsofttech.library.model.LoanStatus;
 import lombok.Builder;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -24,6 +26,7 @@ public class LoanResponse {
     private LocalDate returnDate;
     private LoanStatus status;
     private Integer renewedCount;
+    private BigDecimal fineAmount;
     private String issuedBy;
     private LocalDateTime createdAt;
 }

@@ -26,9 +26,10 @@ public class PublisherController {
     @PostMapping
     @PreAuthorize("hasAuthority('BOOK_CREATE')")
     @Operation(summary = "Create publisher (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody PublisherRequest request) {
+    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody PublisherRequest request,
+                                                 @RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Publisher created", publisherService.create(request)));
+                .body(ApiResponse.success("Publisher created", publisherService.create(request,branchCode)));
     }
 
     @GetMapping("/{id}")
@@ -41,8 +42,8 @@ public class PublisherController {
     @GetMapping
     @PreAuthorize("hasAuthority('BOOK_READ')")
     @Operation(summary = "Get all publishers")
-    public ResponseEntity<ApiResponse<?>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success("Publishers fetched", publisherService.getAll()));
+    public ResponseEntity<ApiResponse<?>> getAll(@RequestParam String branchCode) {
+        return ResponseEntity.ok(ApiResponse.success("Publishers fetched", publisherService.getAll(branchCode)));
     }
 
     @GetMapping("/search")

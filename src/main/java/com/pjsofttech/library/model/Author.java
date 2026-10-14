@@ -43,4 +43,8 @@ public class Author {
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Book> books = new HashSet<>();
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

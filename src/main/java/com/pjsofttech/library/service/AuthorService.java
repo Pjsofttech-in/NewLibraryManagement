@@ -6,9 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface AuthorService {
-    AuthorResponse create(AuthorRequest request);
+    AuthorResponse create(AuthorRequest request,String branchCode);
     AuthorResponse getById(Long id);
-    Page<AuthorResponse> getAll(Pageable pageable);
+    Page<AuthorResponse> getAll(String branchCode, Pageable pageable);
     Page<AuthorResponse> searchByName(String name, Pageable pageable);
     AuthorResponse update(Long id, AuthorRequest request);
     void delete(Long id);

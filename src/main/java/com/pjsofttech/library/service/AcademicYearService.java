@@ -5,10 +5,10 @@ import com.pjsofttech.library.dto.response.AcademicYearResponse;
 import java.util.List;
 
 public interface AcademicYearService {
-    AcademicYearResponse create(AcademicYearRequest request);
+    AcademicYearResponse create(AcademicYearRequest request,String branchCode);
     AcademicYearResponse getById(Long id);
     AcademicYearResponse getActive();
-    List<AcademicYearResponse> getAll();
+    List<AcademicYearResponse> getAll(String branchCode);
     AcademicYearResponse update(Long id, AcademicYearRequest request);
     AcademicYearResponse activate(Long id);
 }

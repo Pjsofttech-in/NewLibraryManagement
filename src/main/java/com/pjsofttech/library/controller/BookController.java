@@ -30,9 +30,10 @@ public class BookController {
     @PostMapping
     @PreAuthorize("hasAuthority('BOOK_CREATE')")
     @Operation(summary = "Create a book (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody BookRequest request) {
+    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody BookRequest request
+    ,@RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Book created successfully", bookService.create(request)));
+                .body(ApiResponse.success("Book created successfully", bookService.create(request,branchCode)));
     }
 
     @GetMapping("/{id}")
@@ -46,6 +47,7 @@ public class BookController {
     @PreAuthorize("hasAuthority('BOOK_READ')")
     @Operation(summary = "Get all books (paginated)")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "title") String sortBy,
@@ -56,7 +58,7 @@ public class BookController {
                 : Sort.by(sortBy).ascending();
 
         return ResponseEntity.ok(ApiResponse.success("Books fetched",
-                bookService.getAll(PageRequest.of(page, size, sort))));
+                bookService.getAll(branchCode,PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/search")

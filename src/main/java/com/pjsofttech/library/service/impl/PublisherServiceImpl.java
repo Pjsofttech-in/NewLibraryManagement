@@ -24,7 +24,7 @@ public class PublisherServiceImpl implements PublisherService {
 
     @Override
     @Transactional
-    public PublisherResponse create(PublisherRequest request) {
+    public PublisherResponse create(PublisherRequest request,String branchCode) {
         if (publisherRepository.existsByNameIgnoreCase(request.getName())) {
             throw new DuplicateResourceException("Publisher '" + request.getName() + "' already exists");
         }
@@ -35,6 +35,7 @@ public class PublisherServiceImpl implements PublisherService {
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .country(request.getCountry())
+                        .branchCode(branchCode)
                 .build());
         log.info("Publisher created: {}", saved.getName());
         return toResponse(saved);
@@ -48,8 +49,10 @@ public class PublisherServiceImpl implements PublisherService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PublisherResponse> getAll() {
-        return publisherRepository.findAll().stream().map(this::toResponse).toList();
+    public List<PublisherResponse> getAll(String branchCode) {
+//        return publisherRepository.findAll().stream().map(this::toResponse).toList();
+        return publisherRepository.findAllByBranchCode(branchCode)
+                .stream().map(this::toResponse).toList();
     }
 
     @Override

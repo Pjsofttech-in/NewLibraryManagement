@@ -2,10 +2,8 @@ package com.pjsofttech.library.service.impl;
 
 import com.pjsofttech.library.dto.request.BookCopyRequest;
 import com.pjsofttech.library.dto.request.BookRequest;
-import com.pjsofttech.library.dto.response.AuthorResponse;
-import com.pjsofttech.library.dto.response.BookCopyResponse;
-import com.pjsofttech.library.dto.response.BookResponse;
-import com.pjsofttech.library.dto.response.CategoryResponse;
+import com.pjsofttech.library.dto.request.PublisherRequest;
+import com.pjsofttech.library.dto.response.*;
 import com.pjsofttech.library.exception.BusinessException;
 import com.pjsofttech.library.exception.DuplicateResourceException;
 import com.pjsofttech.library.exception.ResourceNotFoundException;
@@ -33,10 +31,34 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepository authorRepository;
     private final CategoryRepository categoryRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final PublisherRepository publisherRepository;
+    private final RackRepository rackRepository;
+
+    private PublisherResponse toPublisherResponse(Publisher request){
+        return PublisherResponse.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .country(request.getCountry())
+                .email(request.getEmail())
+                .website(request.getWebsite())
+                .address(request.getAddress())
+                .phone(request.getPhone())
+                .build();
+    }
+    private PublisherRequest toPublisherRequest(Publisher request){
+        return PublisherRequest.builder()
+                .name(request.getName())
+                .country(request.getCountry())
+                .email(request.getEmail())
+                .website(request.getWebsite())
+                .address(request.getAddress())
+                .phone(request.getPhone())
+                .build();
+    }
 
     @Override
     @Transactional
-    public BookResponse create(BookRequest request) {
+    public BookResponse create(BookRequest request,String branchCode) {
         if (bookRepository.existsByIsbn(request.getIsbn())) {
             throw new DuplicateResourceException("Book with ISBN '" + request.getIsbn() + "' already exists");
         }
@@ -46,8 +68,10 @@ public class BookServiceImpl implements BookService {
                 .description(request.getDescription())
                 .publicationYear(request.getPublicationYear())
                 .language(request.getLanguage())
-                .publisher(request.getPublisher())
+                .publisher(publisherRepository.findById(request.getPublisherId())
+                        .orElseThrow(()->new RuntimeException("Publisher Not Found")))
                 .build();
+        book.setBranchCode(branchCode);
 
         if (request.getCategoryId() != null) {
             Category cat = categoryRepository.findById(request.getCategoryId())
@@ -71,9 +95,12 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BookResponse> getAll(Pageable pageable) {
-        return bookRepository.findAll(pageable).map(this::toResponse);
+    public Page<BookResponse> getAll(String branchCode, Pageable pageable) {
+//        return bookRepository.findAll(pageable).map(this::toResponse);
+        return bookRepository.findAllByBranchCode(branchCode, pageable)
+                .map(this::toResponse);
     }
+
 
     @Override
     @Transactional
@@ -87,7 +114,7 @@ public class BookServiceImpl implements BookService {
         book.setDescription(request.getDescription());
         book.setPublicationYear(request.getPublicationYear());
         book.setLanguage(request.getLanguage());
-        book.setPublisher(request.getPublisher());
+        book.setPublisher(publisherRepository.findById(request.getPublisherId()).orElseThrow(()->new RuntimeException("Publisher Not Found")));
 
         if (request.getCategoryId() != null) {
             Category cat = categoryRepository.findById(request.getCategoryId())
@@ -130,6 +157,8 @@ public class BookServiceImpl implements BookService {
                 .book(book)
                 .barcode(request.getBarcode())
                 .status(request.getStatus() != null ? request.getStatus() : CopyStatus.AVAILABLE)
+                .rack(rackRepository.findById(request.getRackId())
+                        .orElseThrow(()->new RuntimeException("Rack Not Found")))
                 .shelfLocation(request.getShelfLocation())
                 .purchaseDate(request.getPurchaseDate())
                 .build();
@@ -206,7 +235,7 @@ public class BookServiceImpl implements BookService {
                 .id(b.getId()).title(b.getTitle()).isbn(b.getIsbn())
                 .description(b.getDescription())
                 .publicationYear(b.getPublicationYear())
-                .language(b.getLanguage()).publisher(b.getPublisher())
+                .language(b.getLanguage()).publisher(toPublisherResponse(b.getPublisher()))
                 .totalCopies(b.getTotalCopies())
                 .availableCopies(b.getAvailableCopies())
                 .category(catResp).authors(authorResponses)

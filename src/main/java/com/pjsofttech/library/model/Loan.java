@@ -33,7 +33,7 @@ public class Loan {
     @JoinColumn(name = "book_copy_id", nullable = false)
     private BookCopy bookCopy;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYear academicYear;
 
@@ -68,4 +68,8 @@ public class Loan {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

@@ -51,4 +51,8 @@ public class Publisher {
     @OneToMany(mappedBy = "publisher", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Book> books = new ArrayList<>();
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

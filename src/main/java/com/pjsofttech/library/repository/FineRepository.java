@@ -26,4 +26,20 @@ public interface FineRepository extends JpaRepository<Fine, Long> {
     BigDecimal sumPendingFinesByMember(@Param("memberId") Long memberId);
 
     Page<Fine> findByStatus(FineStatus status, Pageable pageable);
+
+    Page<Fine> findAllByBranchCode(String branchCode, Pageable pageable);
+
+    long countByBranchCode(String branchCode);
+    long countByBranchCodeAndStatus(String branchCode, FineStatus status); // FineRepository
+
+    @Query("""
+    SELECT COALESCE(SUM(f.totalAmount), 0)
+    FROM Fine f
+    WHERE f.branchCode = :branchCode
+      AND f.status = :status
+    """)
+    BigDecimal sumTotalAmountByBranchCodeAndStatus(
+            @Param("branchCode") String branchCode,
+            @Param("status") FineStatus status
+    );
 }

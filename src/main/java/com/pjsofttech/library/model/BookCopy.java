@@ -59,4 +59,8 @@ public class BookCopy {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rack_id", nullable = false)
     private Rack rack;
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

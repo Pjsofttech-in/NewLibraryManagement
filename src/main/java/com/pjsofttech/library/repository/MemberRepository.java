@@ -23,4 +23,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "LOWER(u.email) LIKE LOWER(CONCAT('%',:kw,'%')) OR " +
             "LOWER(m.membershipNumber) LIKE LOWER(CONCAT('%',:kw,'%'))")
     Page<Member> searchMembers(@Param("kw") String keyword, Pageable pageable);
+
+
+    Page<Member> findAllByBranchCode(String branchCode, Pageable pageable);
+//    Page<Member> findByNameContainingIgnoreCaseAndBranchCode(String keyword, String branchCode, Pageable pageable);
+
+    long countByBranchCode(String branchCode);
+    long countByBranchCodeAndStatus(
+            String branchCode,
+            MemberStatus status
+    );
+
 }

@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface PublisherService {
-    PublisherResponse create(PublisherRequest request);
+    PublisherResponse create(PublisherRequest request,String branchCode);
     PublisherResponse getById(Long id);
-    List<PublisherResponse> getAll();
+    List<PublisherResponse> getAll(String branchCode);
     Page<PublisherResponse> search(String name, Pageable pageable);
     PublisherResponse update(Long id, PublisherRequest request);
     void delete(Long id);

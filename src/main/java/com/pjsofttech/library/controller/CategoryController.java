@@ -27,9 +27,10 @@ public class CategoryController {
     @PostMapping
     @PreAuthorize("hasAuthority('CATEGORY_CREATE')")
     @Operation(summary = "Create a category (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody CategoryRequest request) {
+    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody CategoryRequest request,
+                                                 @RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Category created", categoryService.create(request)));
+                .body(ApiResponse.success("Category created", categoryService.create(request,branchCode)));
     }
 
     @GetMapping("/{id}")
@@ -43,14 +44,15 @@ public class CategoryController {
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
     @Operation(summary = "Get all categories")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "false") boolean paged,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         if (paged) {
             return ResponseEntity.ok(ApiResponse.success("Categories fetched",
-                    categoryService.getAllPaged(PageRequest.of(page, size, Sort.by("name")))));
+                    categoryService.getAllPaged(branchCode,PageRequest.of(page, size, Sort.by("name")))));
         }
-        return ResponseEntity.ok(ApiResponse.success("Categories fetched", categoryService.getAll()));
+        return ResponseEntity.ok(ApiResponse.success("Categories fetched", categoryService.getAll(branchCode)));
     }
 
     @PutMapping("/{id}")

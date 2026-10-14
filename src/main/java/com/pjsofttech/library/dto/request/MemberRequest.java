@@ -17,4 +17,6 @@ public class MemberRequest {
     private String address;
 
     private LocalDate membershipExpiryDate;
+
+    private Long academicYearId;
 }

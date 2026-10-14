@@ -54,4 +54,8 @@ public class Fine {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

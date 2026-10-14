@@ -5,9 +5,9 @@ import com.pjsofttech.library.dto.response.RackResponse;
 import java.util.List;
 
 public interface RackService {
-    RackResponse create(RackRequest request);
+    RackResponse create(RackRequest request,String branchCode);
     RackResponse getById(Long id);
-    List<RackResponse> getAll();
+    List<RackResponse> getAll(String branchCode);
     List<RackResponse> search(String keyword);
     RackResponse update(Long id, RackRequest request);
     void delete(Long id);

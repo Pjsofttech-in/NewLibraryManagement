@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface CategoryService {
-    CategoryResponse create(CategoryRequest request);
+    CategoryResponse create(CategoryRequest request,String branchCode);
     CategoryResponse getById(Long id);
-    List<CategoryResponse> getAll();
-    Page<CategoryResponse> getAllPaged(Pageable pageable);
+    List<CategoryResponse> getAll(String branchCode);
+    Page<CategoryResponse> getAllPaged(String branchCode,Pageable pageable);
     CategoryResponse update(Long id, CategoryRequest request);
     void delete(Long id);
 }

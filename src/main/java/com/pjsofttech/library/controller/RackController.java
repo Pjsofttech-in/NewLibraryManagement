@@ -29,12 +29,13 @@ public class RackController {
     @PreAuthorize("hasAuthority('RACK_CREATE')")
     @Operation(summary = "Create a new rack (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> create(
-            @Valid @RequestBody RackRequest request) {
+            @Valid @RequestBody RackRequest request,
+            @RequestParam String branchCode) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
                         "Rack created",
-                        rackService.create(request)
+                        rackService.create(request,branchCode)
                 ));
     }
 
@@ -55,12 +56,12 @@ public class RackController {
     @GetMapping
     @PreAuthorize("hasAuthority('RACK_READ')")
     @Operation(summary = "Get all racks")
-    public ResponseEntity<ApiResponse<?>> getAll() {
+    public ResponseEntity<ApiResponse<?>> getAll(@RequestParam String branchCode) {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Racks fetched",
-                        rackService.getAll()
+                        rackService.getAll(branchCode)
                 )
         );
     }

@@ -14,7 +14,7 @@ public class BookResponse {
     private String description;
     private Integer publicationYear;
     private String language;
-    private String publisher;
+    private PublisherResponse publisher;
     private Integer totalCopies;
     private Integer availableCopies;
     private CategoryResponse category;

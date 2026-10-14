@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -49,7 +50,7 @@ public class LoanServiceImpl implements LoanService {
      */
     @Override
     @Transactional
-    public LoanResponse issueBook(LoanRequest request, String issuedByEmail) {
+    public LoanResponse issueBook(LoanRequest request, String issuedByEmail,String branchCode) {
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new ResourceNotFoundException("Member", request.getMemberId()));
 
@@ -78,16 +79,24 @@ public class LoanServiceImpl implements LoanService {
                 .orElseThrow(() -> new BookNotAvailableException(
                         "No available copy for book '" + book.getTitle() + "'. Consider making a reservation."));
 
+        if (member.getAcademicYear() == null) {
+            throw new BusinessException(
+                    "Member does not have an academic year assigned"
+            );
+        }
+
         // 6. Create the loan
         LocalDate today = LocalDate.now();
         Loan loan = Loan.builder()
                 .member(member)
+                .academicYear(member.getAcademicYear())
                 .bookCopy(copy)
                 .issueDate(today)
                 .dueDate(today.plusDays(loanDurationDays))
                 .status(LoanStatus.ACTIVE)
                 .issuedBy(issuedByEmail)
                 .build();
+        loan.setBranchCode(branchCode);
         loanRepository.save(loan);
 
         // 7. Update copy status
@@ -182,8 +191,10 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<LoanResponse> getAll(Pageable pageable) {
-        return loanRepository.findAll(pageable).map(this::toResponse);
+    public Page<LoanResponse> getAll(String branchCode,Pageable pageable) {
+//        return loanRepository.findAll(pageable).map(this::toResponse);
+        return loanRepository.findAllByBranchCode(branchCode, pageable).map(this::toResponse);
+
     }
 
     @Override
@@ -194,8 +205,10 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<LoanResponse> getOverdueLoans(Pageable pageable) {
-        return loanRepository.findOverdueLoansPage(LocalDate.now(), pageable).map(this::toResponse);
+    public Page<LoanResponse> getOverdueLoans(String branchCode,Pageable pageable) {
+//        return loanRepository.findOverdueLoansPage(LocalDate.now(), pageable).map(this::toResponse);
+        return loanRepository.findByBranchCodeAndStatus(branchCode, LoanStatus.OVERDUE, pageable)
+                .map(this::toResponse);
     }
 
     /**
@@ -226,6 +239,10 @@ public class LoanServiceImpl implements LoanService {
                 && l.getDueDate().isBefore(LocalDate.now())) {
             status = LoanStatus.OVERDUE;
         }
+        BigDecimal fineAmount = l.getFine() != null
+                ? l.getFine().getTotalAmount()
+                : BigDecimal.ZERO;
+
         return LoanResponse.builder()
                 .id(l.getId())
                 .memberId(l.getMember().getId())
@@ -241,6 +258,7 @@ public class LoanServiceImpl implements LoanService {
                 .returnDate(l.getReturnDate())
                 .status(status)
                 .renewedCount(l.getRenewedCount())
+                .fineAmount(fineAmount)
                 .issuedBy(l.getIssuedBy())
                 .createdAt(l.getCreatedAt())
                 .build();

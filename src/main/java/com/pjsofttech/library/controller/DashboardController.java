@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,8 +25,8 @@ public class DashboardController {
     @GetMapping("/stats")
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
     @Operation(summary = "Get library dashboard statistics (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> getStats() {
+    public ResponseEntity<ApiResponse<?>> getStats(@RequestParam String branchCode) {
         return ResponseEntity.ok(ApiResponse.success("Dashboard stats fetched",
-                dashboardService.getStats()));
+                dashboardService.getStats(branchCode)));
     }
 }

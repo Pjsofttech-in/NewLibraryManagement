@@ -119,8 +119,10 @@ public class FineServiceImpl implements FineService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FineResponse> getAll(Pageable pageable) {
-        return fineRepository.findAll(pageable).map(this::toResponse);
+    public Page<FineResponse> getAll(String branchCode,Pageable pageable) {
+//        return fineRepository.findAll(pageable).map(this::toResponse);
+        return fineRepository.findAllByBranchCode(branchCode, pageable).map(this::toResponse);
+
     }
 
     @Override
@@ -197,23 +199,6 @@ public class FineServiceImpl implements FineService {
         Loan loan = f.getLoan();
         Member member = loan.getMember();
         BookCopy copy = loan.getBookCopy();
-        int overdueDays = f.getOverdueDays();
-        BigDecimal totalAmount = f.getTotalAmount();
-
-        // Dynamically calculate current overdue amount
-        if (f.getStatus() == FineStatus.PENDING
-                && loan.getDueDate() != null
-                && loan.getDueDate().isBefore(LocalDate.now())) {
-
-            overdueDays = (int) ChronoUnit.DAYS.between(
-                    loan.getDueDate(),
-                    LocalDate.now()
-            );
-
-            totalAmount = finePerDay.multiply(
-                    BigDecimal.valueOf(overdueDays)
-            );
-        }
 
         return FineResponse.builder()
                 .id(f.getId())
@@ -222,9 +207,9 @@ public class FineServiceImpl implements FineService {
                 .membershipNumber(member.getMembershipNumber())
                 .bookTitle(copy.getBook().getTitle())
                 .barcode(copy.getBarcode())
-                .overdueDays(overdueDays)
-                .finePerDay(finePerDay)
-                .totalAmount(totalAmount)
+                .overdueDays(f.getOverdueDays())
+                .finePerDay(f.getFinePerDay())
+                .totalAmount(f.getTotalAmount())
                 .status(f.getStatus())
                 .paidAt(f.getPaidAt())
                 .waivedBy(f.getWaivedBy())

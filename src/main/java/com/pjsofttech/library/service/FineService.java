@@ -11,10 +11,13 @@ public interface FineService {
     void createFine(Loan loan);
     FineResponse getById(Long id);
     FineResponse getByLoanId(Long loanId);
-    Page<FineResponse> getAll(Pageable pageable);
+    Page<FineResponse> getAll(String branchCode,Pageable pageable);
     Page<FineResponse> getFinesByMember(Long memberId, Pageable pageable);
     FineResponse payFine(Long fineId);
     FineResponse waiveFine(Long fineId, WaiveFineRequest request, String waivedByEmail);
     BigDecimal getTotalPendingFineForMember(Long memberId);
     void notifyNextReservation(Long bookId);
+
+
+
 }

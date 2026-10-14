@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,8 @@ public interface AcademicYearRepository extends JpaRepository<AcademicYear, Long
     Optional<AcademicYear> findByIsActiveTrue();
 
     boolean existsByYearLabel(String yearLabel);
+    boolean existsById(Long id);
+
 
     /** Deactivate all years — called before activating a new one */
     @Modifying
@@ -28,4 +31,9 @@ public interface AcademicYearRepository extends JpaRepository<AcademicYear, Long
 
     @Query("SELECT COUNT(m) FROM Member m WHERE m.academicYear.id = :yearId")
     long countMembersByAcademicYear(@Param("yearId") Long yearId);
+
+    List<AcademicYear> findAllByBranchCode(String branchCode);
+    Optional<AcademicYear> findByBranchCodeAndIsActiveTrue(String branchCode);
+
+    long countByBranchCode(String branchCode);
 }

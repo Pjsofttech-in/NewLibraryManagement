@@ -24,13 +24,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse create(CategoryRequest request) {
+    public CategoryResponse create(CategoryRequest request,String branchCode) {
         if (categoryRepository.existsByNameIgnoreCase(request.getName())) {
             throw new DuplicateResourceException("Category '" + request.getName() + "' already exists");
         }
         Category saved = categoryRepository.save(Category.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                        .branchCode(branchCode)
                 .build());
         log.info("Category created: {}", saved.getName());
         return toResponse(saved);
@@ -44,14 +45,18 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryResponse> getAll() {
-        return categoryRepository.findAll().stream().map(this::toResponse).toList();
+    public List<CategoryResponse> getAll(String branchCode) {
+//        return categoryRepository.findAll().stream().map(this::toResponse).toList();
+        return categoryRepository.findAllByBranchCode(branchCode)
+                .stream().map(this::toResponse).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CategoryResponse> getAllPaged(Pageable pageable) {
-        return categoryRepository.findAll(pageable).map(this::toResponse);
+    public Page<CategoryResponse> getAllPaged(String branchCode,Pageable pageable) {
+//        return categoryRepository.findAll(pageable).map(this::toResponse);
+        return categoryRepository.findAllByBranchCode(branchCode,pageable)
+                .map(this::toResponse);
     }
 
     @Override

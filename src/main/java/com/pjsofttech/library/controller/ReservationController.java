@@ -27,10 +27,11 @@ public class ReservationController {
     @PostMapping
     @PreAuthorize("hasAuthority('RESERVATION_CREATE')")
     @Operation(summary = "Reserve a book (when all copies are unavailable)")
-    public ResponseEntity<ApiResponse<?>> reserve(@Valid @RequestBody ReservationRequest request) {
+    public ResponseEntity<ApiResponse<?>> reserve(@Valid @RequestBody ReservationRequest request,
+                                                  @RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Book reserved successfully",
-                        reservationService.reserve(request)));
+                        reservationService.reserve(request,branchCode)));
     }
 
     @GetMapping("/{id}")
@@ -45,10 +46,11 @@ public class ReservationController {
     @PreAuthorize("hasAuthority('RESERVATION_MANAGE')")
     @Operation(summary = "Get all reservations (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(ApiResponse.success("Reservations fetched",
-                reservationService.getAll(PageRequest.of(page, size,
+                reservationService.getAll(branchCode,PageRequest.of(page, size,
                         Sort.by("createdAt").descending()))));
     }
 

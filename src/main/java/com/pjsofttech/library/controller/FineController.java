@@ -42,10 +42,11 @@ public class FineController {
     @PreAuthorize("hasAuthority('FINE_MANAGE') or hasAuthority('FINE_READ')")
     @Operation(summary = "Get all fines (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(ApiResponse.success("Fines fetched",
-                fineService.getAll(PageRequest.of(page, size, Sort.by("createdAt").descending()))));
+                fineService.getAll(branchCode,PageRequest.of(page, size, Sort.by("createdAt").descending()))));
     }
 
     @GetMapping("/member/{memberId}")
@@ -78,6 +79,7 @@ public class FineController {
     @PreAuthorize("hasAuthority('FINE_WAIVE')")
     @Operation(summary = "Waive a fine (ADMIN/LIBRARIAN only)")
     public ResponseEntity<ApiResponse<?>> waive(
+            @RequestParam String branchCode,
             @PathVariable Long id,
             @Valid @RequestBody WaiveFineRequest request,
             Authentication authentication) {

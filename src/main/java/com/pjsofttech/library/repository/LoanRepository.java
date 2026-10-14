@@ -26,4 +26,10 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT l FROM Loan l WHERE l.status = 'ACTIVE' AND l.dueDate < :today")
     Page<Loan> findOverdueLoansPage(@Param("today") LocalDate today, Pageable pageable);
+
+    Page<Loan> findAllByBranchCode(String branchCode, Pageable pageable);
+    Page<Loan> findByBranchCodeAndStatus(String branchCode, LoanStatus status, Pageable pageable);
+
+    long countByBranchCode(String branchCode);
+    long countByBranchCodeAndStatus(String branchCode, LoanStatus status); // LoanRepository
 }

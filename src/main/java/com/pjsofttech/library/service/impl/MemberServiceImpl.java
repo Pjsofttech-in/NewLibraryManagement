@@ -6,10 +6,8 @@ import com.pjsofttech.library.dto.response.MemberResponse;
 import com.pjsofttech.library.exception.BusinessException;
 import com.pjsofttech.library.exception.DuplicateResourceException;
 import com.pjsofttech.library.exception.ResourceNotFoundException;
-import com.pjsofttech.library.model.Member;
-import com.pjsofttech.library.model.MemberStatus;
-import com.pjsofttech.library.model.Role;
-import com.pjsofttech.library.model.User;
+import com.pjsofttech.library.model.*;
+import com.pjsofttech.library.repository.AcademicYearRepository;
 import com.pjsofttech.library.repository.MemberRepository;
 import com.pjsofttech.library.repository.UserRepository;
 import com.pjsofttech.library.service.MemberService;
@@ -34,6 +32,8 @@ public class MemberServiceImpl implements MemberService {
     private final UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AcademicYearRepository academicYearRepository;
 
 //    @Override
 //    @Transactional
@@ -83,8 +83,10 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<MemberResponse> getAll(Pageable pageable) {
-        return memberRepository.findAll(pageable).map(this::toResponse);
+    public Page<MemberResponse> getAll(String branchCode,Pageable pageable) {
+//        return memberRepository.findAll(pageable).map(this::toResponse);
+        return memberRepository.findAllByBranchCode(branchCode, pageable).map(this::toResponse);
+
     }
 
     @Override
@@ -113,6 +115,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberResponse updateType(Long id, MemberType memberType) {
+        Member member = findById(id);
+        member.setMemberType(memberType);
+        log.info("Member type updated: id={}, memberType={}", id, memberType);
+        return toResponse(memberRepository.save(member));
+    }
+
+    @Override
     @Transactional
     public void delete(Long id) {
         memberRepository.delete(findById(id));
@@ -120,10 +130,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberResponse registerMember(CreateMemberAdminRequest request) {
+    public MemberResponse registerMember(CreateMemberAdminRequest request,String branchCode) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
+
+
+        AcademicYear academicYear = academicYearRepository.findById(request.getAcademicYearId())
+                .orElseThrow(()-> new RuntimeException("Academic Year Not Found !"));
 
         User user = User.builder()
                 .name(request.getName())
@@ -140,17 +154,20 @@ public class MemberServiceImpl implements MemberService {
                 .user(user)
                 .phone(request.getPhone())
                 .address(request.getAddress())
-                .academicYear(request.getAcademicYear())
+                .academicYear(academicYear)
                 .membershipNumber(generateMembershipNumber())
                 .membershipDate(LocalDate.now())
                 .membershipExpiryDate(LocalDate.now().plusYears(1))
                 .status(MemberStatus.ACTIVE)
                 .build();
+        member.setBranchCode(branchCode);
 
         memberRepository.save(member);
 
         return toResponse(member);
     }
+
+
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -180,6 +197,7 @@ public class MemberServiceImpl implements MemberService {
                 .membershipDate(m.getMembershipDate())
                 .membershipExpiryDate(m.getMembershipExpiryDate())
                 .status(m.getStatus())
+                .memberType(m.getMemberType())
                 .createdAt(m.getCreatedAt())
                 .build();
     }

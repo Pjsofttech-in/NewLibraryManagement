@@ -25,4 +25,6 @@ public interface EditionRepository extends JpaRepository<Edition, Long> {
 
     @Query("SELECT COUNT(e) FROM Edition e WHERE e.book.id = :bookId")
     long countEditionsByBookId(@Param("bookId") Long bookId);
+
+    long countByBranchCode(String branchCode);
 }

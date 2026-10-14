@@ -13,7 +13,11 @@ public class BookCopyResponse {
     private Long bookId;
     private String bookTitle;
     private String barcode;
+//    private RackResponse rackResponse;
+    private Long rackId;
+    private String rackCode;
     private CopyStatus status;
+
     private String shelfLocation;
     private LocalDate purchaseDate;
     private LocalDateTime createdAt;

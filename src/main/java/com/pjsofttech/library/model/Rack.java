@@ -46,6 +46,10 @@ public class Rack {
      * Optional: which section/wing of the library this rack is in
      * e.g. "Ground Floor - East Wing", "First Floor - Reference Section"
      */
+    @Column(name = "floor_section", length = 100)
+    private String floorSection;
+
+
     @Column(name = "section", length = 100)
     private String section;
 
@@ -69,4 +73,10 @@ public class Rack {
     @OneToMany(mappedBy = "rack", fetch = FetchType.LAZY)
     @Builder.Default
     private List<BookCopy> bookCopies = new ArrayList<>();
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
+
+
 }

@@ -28,7 +28,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public ReservationResponse reserve(ReservationRequest request) {
+    public ReservationResponse reserve(ReservationRequest request,String branchCode) {
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new ResourceNotFoundException("Member", request.getMemberId()));
 
@@ -59,6 +59,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .reservationDate(LocalDate.now())
                 .status(ReservationStatus.PENDING)
                 .build();
+        reservation.setBranchCode(branchCode);
 
         Reservation saved = reservationRepository.save(reservation);
         log.info("Reservation created: id={}, member={}, book='{}'",
@@ -74,8 +75,10 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ReservationResponse> getAll(Pageable pageable) {
-        return reservationRepository.findAll(pageable).map(this::toResponse);
+    public Page<ReservationResponse> getAll(String branchCode,Pageable pageable) {
+//        return reservationRepository.findAll(pageable).map(this::toResponse);
+        return reservationRepository.findAllByBranchCode(branchCode, pageable).map(this::toResponse);
+
     }
 
     @Override

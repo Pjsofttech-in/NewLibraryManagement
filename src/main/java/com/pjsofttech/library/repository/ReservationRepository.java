@@ -17,4 +17,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Optional<Reservation> findFirstByBookIdAndStatusOrderByCreatedAtAsc(Long bookId, ReservationStatus status);
     List<Reservation> findByBookIdAndStatus(Long bookId, ReservationStatus status);
     Page<Reservation> findByStatus(ReservationStatus status, Pageable pageable);
+
+    Page<Reservation> findAllByBranchCode(String branchCode, Pageable pageable);
+
+    long countByBranchCode(String branchCode);
+    long countByBranchCodeAndStatus(String branchCode, ReservationStatus status);
+
 }

@@ -25,7 +25,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
 
     @Override
     @Transactional
-    public AcademicYearResponse create(AcademicYearRequest request) {
+    public AcademicYearResponse create(AcademicYearRequest request,String branchCode) {
         if (academicYearRepository.existsByYearLabel(request.getYearLabel())) {
             throw new DuplicateResourceException("Academic year '" + request.getYearLabel() + "' already exists");
         }
@@ -43,6 +43,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
                 .finePerDay(request.getFinePerDay())
                 .description(request.getDescription())
                 .build());
+        saved.setBranchCode(branchCode);
         log.info("Academic year created: {}", saved.getYearLabel());
         return toResponse(saved);
     }
@@ -63,8 +64,10 @@ public class AcademicYearServiceImpl implements AcademicYearService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AcademicYearResponse> getAll() {
-        return academicYearRepository.findAll().stream().map(this::toResponse).toList();
+    public List<AcademicYearResponse> getAll(String branchCode) {
+//        return academicYearRepository.findAll().stream().map(this::toResponse).toList();
+        return academicYearRepository.findAllByBranchCode(branchCode)
+                .stream().map(this::toResponse).toList();
     }
 
     @Override

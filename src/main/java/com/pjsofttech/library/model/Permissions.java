@@ -5,7 +5,8 @@ public enum Permissions {
 // =========================
 // USER MANAGEMENT
 // =========================
-USER_READ,
+    USER_CREATE,
+    USER_READ,
     USER_UPDATE,
     USER_DELETE,
     USER_MANAGE_ROLE,

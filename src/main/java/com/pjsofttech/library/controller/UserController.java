@@ -6,11 +6,15 @@ import com.pjsofttech.library.repository.UserRepository;
 import com.pjsofttech.library.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/pjsofttech/library/user")
@@ -21,11 +25,38 @@ public class UserController {
     private UserService userService;
 
 
+    // ADMIN / LIBRARIAN - CREATE MEMBER
+    @PreAuthorize("hasAuthority('USER_CREATE')")
+    @PostMapping("/member")
+    public ResponseEntity<?> registerMember(
+            @RequestBody CreateMemberAdminRequest request) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userService.registerMember(request));
+    }
+
+
+    // ADMIN / LIBRARIAN - GET ALL USERS
+    @PreAuthorize("hasAuthority('USER_READ')")
+    @GetMapping("/paginated")
+    public ResponseEntity<?> fetchAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.fetchUsers(PageRequest.of(page, size, sort)));
+    }
     // ADMIN / LIBRARIAN - GET ALL USERS
     @PreAuthorize("hasAuthority('USER_READ')")
     @GetMapping()
-    public ResponseEntity<?> fetchAllUsers(){
-        return ResponseEntity.status(HttpStatus.CREATED)
+    public ResponseEntity<?> fetchAllUsers(
+    ){
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(userService.fetchUsers());
     }
 
@@ -91,7 +122,8 @@ public class UserController {
     // GET CURRENT LOGGED-IN USER
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(
-            Authentication authentication) {
+            Authentication authentication,
+            @RequestParam(required = false) String branchCode) {
         System.out.println("Authentication = " + authentication);
 
         if (authentication != null) {
@@ -101,9 +133,18 @@ public class UserController {
             System.out.println("Authenticated = " + authentication.isAuthenticated());
         }
         String email = authentication.getName();
-        return ResponseEntity.ok(
-                userService.getCurrentUser(email)
-        );
+        // user was auto-created in the filter if missing
+//        return ResponseEntity.ok(
+//                userService.getCurrentUser(email)
+//        );
+
+        // External user not in library DB — return basic info from token
+        return ResponseEntity.ok(Map.of(
+                "email", email,
+                "role", "STAFF",
+                "source", "external",
+                "branchCode",branchCode !=null ? branchCode : ""
+        ));
     }
 
     //Update Current User

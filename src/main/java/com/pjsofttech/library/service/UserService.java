@@ -1,16 +1,20 @@
 package com.pjsofttech.library.service;
 
 import com.pjsofttech.library.dto.request.*;
-import com.pjsofttech.library.model.Member;
-import com.pjsofttech.library.model.MemberStatus;
-import com.pjsofttech.library.model.Role;
-import com.pjsofttech.library.model.User;
+import com.pjsofttech.library.dto.response.AdminMemberRegistrationResponse;
+import com.pjsofttech.library.dto.response.MemberResponse;
+import com.pjsofttech.library.model.*;
+import com.pjsofttech.library.repository.AcademicYearRepository;
 import com.pjsofttech.library.repository.MemberRepository;
 import com.pjsofttech.library.repository.UserRepository;
 import com.pjsofttech.library.dto.response.RegisterUserResponseDto;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +30,9 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private AcademicYearRepository academicYearRepository;
+
 
     //Helper Methods
 
@@ -42,7 +49,7 @@ public class UserService {
                 .active(true)
                 .build();
     }
-    private static RegisterUserResponseDto user_to_userResponseDto(User user){
+    private RegisterUserResponseDto user_to_userResponseDto(User user){
         return RegisterUserResponseDto.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -51,6 +58,7 @@ public class UserService {
                 .role(user.getRole())
                 .active(user.isActive())
                 .createdAt(user.getCreatedAt())
+                .permissions(user.getRole().getPermissions())
                 .build();
     }
     private static List<RegisterUserResponseDto> listOfUsersToListOfResponseUsers(List<User> users){
@@ -62,6 +70,7 @@ public class UserService {
                         .dateOfBirth(user.getDateOfBirth())
                         .role(user.getRole())
                         .active(user.isActive())
+                        .createdAt(user.getCreatedAt())
                         .build()
                 ).toList();
     }
@@ -223,5 +232,86 @@ public class UserService {
 
         userRepository.save(loggedInUser);
         return "Password Changed Successfully";
+    }
+
+    @Transactional
+    public AdminMemberRegistrationResponse registerMember(
+            CreateMemberAdminRequest request) {
+
+        // 1. Check duplicate email
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        // 2. Find academic year
+        AcademicYear academicYear = academicYearRepository
+                .findById(request.getAcademicYearId())
+                .orElseThrow(() ->
+                        new RuntimeException("Academic year not found"));
+
+        // 3. Generate temporary password
+        String temporaryPassword = request.getPassword();
+
+        if (temporaryPassword == null || temporaryPassword.isBlank()) {
+            temporaryPassword = "123456";
+        }
+
+        // 4. Create User
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(temporaryPassword))
+                .role(Role.MEMBER)
+                .dateOfBirth(request.getDateOfBirth())
+                .active(true)
+                .build();
+
+        user = userRepository.save(user);
+
+        // 5. Generate membership number
+        String membershipNumber = generateMembershipNumber();
+
+        // 6. Membership expiry
+        LocalDate membershipExpiryDate =
+                request.getMembershipExpiryDate() != null
+                        ? request.getMembershipExpiryDate()
+                        : LocalDate.now().plusYears(1);
+
+        // 7. Create Member
+        Member member = Member.builder()
+                .user(user)
+                .membershipNumber(membershipNumber)
+                .phone(request.getPhone())
+                .address(request.getAddress())
+                .academicYear(academicYear)
+                .membershipDate(LocalDate.now())
+                .membershipExpiryDate(membershipExpiryDate)
+                .status(MemberStatus.ACTIVE)
+                .build();
+
+        member = memberRepository.save(member);
+
+        // 8. Return temporary password ONCE
+        return AdminMemberRegistrationResponse.builder()
+                .userId(user.getId())
+                .memberId(member.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .membershipNumber(member.getMembershipNumber())
+                .phone(member.getPhone())
+                .address(member.getAddress())
+                .academicYearId(academicYear.getId())
+                .academicYear(academicYear.getYearLabel())
+                .membershipDate(member.getMembershipDate())
+                .membershipExpiryDate(member.getMembershipExpiryDate())
+                .status(member.getStatus())
+                .temporaryPassword(temporaryPassword)
+                .build();
+    }
+
+
+
+    public Page<RegisterUserResponseDto> fetchUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::user_to_userResponseDto);
     }
 }

@@ -18,18 +18,23 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class CreateMemberAdminRequest {
     private String name;
-    private String membershipNumber;
+//    private String membershipNumber;
 
     private String email;
+    /*
+     * Optional.
+     *
+     * If null/blank, backend generates a temporary password.
+     */
     private String password;
     private String phone;
 
     private String address;
     private LocalDate dateOfBirth;
 
-    private AcademicYear academicYear;
+    private Long academicYearId;
 
-    private LocalDate membershipDate;
+//   private LocalDate membershipDate;
 
     private LocalDate membershipExpiryDate;
 }

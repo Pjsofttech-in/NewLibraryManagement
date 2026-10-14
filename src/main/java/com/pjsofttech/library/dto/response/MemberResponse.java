@@ -2,6 +2,7 @@ package com.pjsofttech.library.dto.response;
 
 import com.pjsofttech.library.model.AcademicYear;
 import com.pjsofttech.library.model.MemberStatus;
+import com.pjsofttech.library.model.MemberType;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
@@ -21,5 +22,6 @@ public class MemberResponse {
     private LocalDate membershipDate;
     private LocalDate membershipExpiryDate;
     private MemberStatus status;
+    private MemberType memberType;
     private LocalDateTime createdAt;
 }

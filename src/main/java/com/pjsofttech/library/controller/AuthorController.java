@@ -27,9 +27,9 @@ public class AuthorController {
     @PostMapping
     @PreAuthorize("hasAuthority('AUTHOR_CREATE')")
     @Operation(summary = "Create author (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody AuthorRequest request) {
+    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody AuthorRequest request,@RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Author created", authorService.create(request)));
+                .body(ApiResponse.success("Author created", authorService.create(request,branchCode)));
     }
 
     @GetMapping("/{id}")
@@ -43,11 +43,17 @@ public class AuthorController {
     @PreAuthorize("hasAuthority('AUTHOR_READ')")
     @Operation(summary = "Get all authors (paginated)")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy) {
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         return ResponseEntity.ok(ApiResponse.success("Authors fetched",
-                authorService.getAll(PageRequest.of(page, size, Sort.by(sortBy)))));
+                authorService.getAll(branchCode,PageRequest.of(page, size, Sort.by(sortBy)))));
     }
 
     @GetMapping("/search")

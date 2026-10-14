@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +14,9 @@ public interface PublisherRepository extends JpaRepository<Publisher, Long> {
     Optional<Publisher> findByNameIgnoreCase(String name);
     boolean existsByNameIgnoreCase(String name);
     Page<Publisher> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    List<Publisher> findAllByBranchCode(String branchCode);
+    Page<Publisher> findByNameContainingIgnoreCaseAndBranchCode(String name, String branchCode, Pageable pageable);
+
+    long countByBranchCode(String branchCode);
+
 }

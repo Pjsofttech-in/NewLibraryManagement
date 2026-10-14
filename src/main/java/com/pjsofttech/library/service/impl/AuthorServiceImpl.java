@@ -23,7 +23,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional
-    public AuthorResponse create(AuthorRequest request) {
+    public AuthorResponse create(AuthorRequest request,String branchCode) {
         if (authorRepository.existsByNameIgnoreCase(request.getName())) {
             throw new DuplicateResourceException("Author with name '" + request.getName() + "' already exists");
         }
@@ -31,6 +31,7 @@ public class AuthorServiceImpl implements AuthorService {
                 .name(request.getName())
                 .biography(request.getBiography())
                 .nationality(request.getNationality())
+                .branchCode(branchCode)
                 .build();
         Author saved = authorRepository.save(author);
         log.info("Author created: {}", saved.getName());
@@ -45,8 +46,10 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<AuthorResponse> getAll(Pageable pageable) {
-        return authorRepository.findAll(pageable).map(this::toResponse);
+    public Page<AuthorResponse> getAll(String branchCode, Pageable pageable) {
+//        return authorRepository.findAll(pageable).map(this::toResponse);
+        return authorRepository.findAllByBranchCode(branchCode, pageable)
+                .map(this::toResponse);
     }
 
     @Override

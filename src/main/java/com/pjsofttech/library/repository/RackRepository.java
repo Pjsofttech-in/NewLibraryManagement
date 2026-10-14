@@ -23,4 +23,15 @@ public interface RackRepository extends JpaRepository<Rack, Long> {
 
     @Query("SELECT COUNT(bc) FROM BookCopy bc WHERE bc.rack.id = :rackId")
     long countBooksInRack(@Param("rackId") Long rackId);
+
+    List<Rack> findAllByBranchCode(String branchCode);
+//    List<Rack> findByNameContainingIgnoreCaseAndBranchCode(String keyword, String branchCode);
+
+//    List<Rack> searchByBranch(
+//            @Param("kw") String keyword,
+//            @Param("branchCode") String branchCode
+//    );
+
+    long countByBranchCode(String branchCode);
+
 }

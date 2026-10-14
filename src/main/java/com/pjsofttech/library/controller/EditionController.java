@@ -25,7 +25,8 @@ public class EditionController {
     @PostMapping
     @PreAuthorize("hasAuthority('BOOK_CREATE')")
     @Operation(summary = "Add a new edition of a book (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody EditionRequest request) {
+    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody EditionRequest request,
+                                                 @RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Edition created", editionService.create(request)));
     }

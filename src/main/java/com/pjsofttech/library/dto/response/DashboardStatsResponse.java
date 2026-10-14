@@ -16,5 +16,7 @@ public class DashboardStatsResponse {
     private long overdueLoans;
     private long pendingReservations;
     private long pendingFines;
+    private long paidFines;
     private BigDecimal totalPendingFineAmount;
+    private BigDecimal totalPaidFineAmount;
 }

@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface BookService {
-    BookResponse create(BookRequest request);
+    BookResponse create(BookRequest request,String branchCode);
     BookResponse getById(Long id);
-    Page<BookResponse> getAll(Pageable pageable);
+    Page<BookResponse> getAll(String branchCode,Pageable pageable);
     BookResponse update(Long id, BookRequest request);
     void delete(Long id);
     Page<BookResponse> search(String title, String isbn, Long categoryId, String language, Pageable pageable);

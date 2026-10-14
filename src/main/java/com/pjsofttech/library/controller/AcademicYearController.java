@@ -29,12 +29,13 @@ public class AcademicYearController {
     @PreAuthorize("hasAuthority('ACADEMIC_YEAR_CREATE')")
     @Operation(summary = "Create a new academic year (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> create(
-            @Valid @RequestBody AcademicYearRequest request) {
+            @Valid @RequestBody AcademicYearRequest request,
+            @RequestParam String branchCode) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
                         "Academic year created",
-                        academicYearService.create(request)
+                        academicYearService.create(request,branchCode)
                 ));
     }
 
@@ -55,12 +56,12 @@ public class AcademicYearController {
     @GetMapping
     @PreAuthorize("hasAuthority('ACADEMIC_YEAR_READ')")
     @Operation(summary = "Get all academic years")
-    public ResponseEntity<ApiResponse<?>> getAll() {
+    public ResponseEntity<ApiResponse<?>> getAll(@RequestParam String branchCode) {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Academic years fetched",
-                        academicYearService.getAll()
+                        academicYearService.getAll(branchCode)
                 )
         );
     }

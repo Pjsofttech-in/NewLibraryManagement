@@ -16,6 +16,7 @@ public class BookCopyRequest {
     private String barcode;
 
     private CopyStatus status = CopyStatus.AVAILABLE;
+    private Long rackId;
 
     private String shelfLocation;
 

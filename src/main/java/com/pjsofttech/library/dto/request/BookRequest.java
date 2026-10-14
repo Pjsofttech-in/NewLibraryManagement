@@ -25,8 +25,7 @@ public class BookRequest {
     @Size(max = 50)
     private String language;
 
-    @Size(max = 150)
-    private String publisher;
+    private Long publisherId;
 
     private Long categoryId;
 

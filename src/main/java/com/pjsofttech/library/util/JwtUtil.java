@@ -12,14 +12,14 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String secrete = "This-is-my-jwt-secrete-key-so-that-jwt-can-understand-it-is-of-32-bit";
+    private final String secrete = "s3cR3tK3y!@#4567890qwertyuiopasdfgh";
     private final SecretKey key = Keys.hmacShaKeyFor(secrete.getBytes());
 
     public String generateToken(String username){
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis()+1000*60*60))
+                .expiration(new Date(System.currentTimeMillis()+1000*60*60*60)) //More than 60 hours from the jwt is generated
                 .signWith(key)
                 .compact();
     }

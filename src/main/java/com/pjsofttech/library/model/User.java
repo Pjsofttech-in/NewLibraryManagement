@@ -36,11 +36,14 @@ public class User implements UserDetails {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
     @Column(nullable = false)
     private boolean active=true;
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private Member member;
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 
 
     @Override

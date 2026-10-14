@@ -43,8 +43,10 @@ public class Book {
     @Column(length = 50)
     private String language;
 
-    @Column(length = 150)
-    private String publisher;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "publisher_id")
+    private Publisher publisher;
 
     @Column(name = "total_copies", nullable = false)
     @Builder.Default
@@ -82,4 +84,8 @@ public class Book {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

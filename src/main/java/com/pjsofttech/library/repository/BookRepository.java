@@ -15,6 +15,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     boolean existsByIsbn(String isbn);
     Page<Book> findByTitleContainingIgnoreCase(String title, Pageable pageable);
     Page<Book> findByCategoryId(Long categoryId, Pageable pageable);
+    Page<Book> findAllByBranchCode(String branchCode, Pageable pageable);
+    Optional<Book> findByIdAndBranchCode(Long id, String branchCode);
+
 
     @Query("SELECT DISTINCT b FROM Book b JOIN b.authors a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%',:name,'%'))")
     Page<Book> findByAuthorName(@Param("name") String authorName, Pageable pageable);
@@ -29,4 +32,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                            @Param("categoryId") Long categoryId,
                            @Param("language") String language,
                            Pageable pageable);
+
+    long countByBranchCode(String branchCode);
 }

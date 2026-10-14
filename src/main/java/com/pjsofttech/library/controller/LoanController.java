@@ -30,11 +30,12 @@ public class LoanController {
     @Operation(summary = "Issue a book to a member (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> issueBook(
             @Valid @RequestBody LoanRequest request,
-            Authentication authentication) {
+            Authentication authentication,
+            String branchCode) {
         String issuedBy = authentication.getName();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Book issued successfully",
-                        loanService.issueBook(request, issuedBy)));
+                        loanService.issueBook(request, issuedBy,branchCode)));
     }
 
     @PostMapping("/{loanId}/return")
@@ -64,6 +65,7 @@ public class LoanController {
     @PreAuthorize("hasAuthority('LOAN_MANAGE')")
     @Operation(summary = "Get all loans (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -73,7 +75,7 @@ public class LoanController {
                 ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
 
         return ResponseEntity.ok(ApiResponse.success("Loans fetched",
-                loanService.getAll(PageRequest.of(page, size, sort))));
+                loanService.getAll(branchCode,PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/member/{memberId}")
@@ -92,9 +94,10 @@ public class LoanController {
     @PreAuthorize("hasAuthority('LOAN_MANAGE')")
     @Operation(summary = "Get all overdue loans (ADMIN/LIBRARIAN)")
     public ResponseEntity<ApiResponse<?>> getOverdue(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(ApiResponse.success("Overdue loans fetched",
-                loanService.getOverdueLoans(PageRequest.of(page, size))));
+                loanService.getOverdueLoans(branchCode,PageRequest.of(page, size))));
     }
 }

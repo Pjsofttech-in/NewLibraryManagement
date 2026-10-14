@@ -3,6 +3,7 @@ package com.pjsofttech.library.controller;
 import com.pjsofttech.library.dto.request.CreateMemberAdminRequest;
 import com.pjsofttech.library.dto.request.MemberRequest;
 import com.pjsofttech.library.model.MemberStatus;
+import com.pjsofttech.library.model.MemberType;
 import com.pjsofttech.library.service.MemberService;
 import com.pjsofttech.library.util.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,15 +30,17 @@ public class MemberController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     @Operation(summary = "Register a user as a library member (ADMIN/LIBRARIAN)")
-    public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody CreateMemberAdminRequest request) {
+    public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody CreateMemberAdminRequest request,
+                                                   @RequestParam String branchCode) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Member registered successfully", memberService.registerMember(request)));
+                .body(ApiResponse.success("Member registered successfully", memberService.registerMember(request,branchCode)));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     @Operation(summary = "Get all members (paginated)")
     public ResponseEntity<ApiResponse<?>> getAll(
+            @RequestParam String branchCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -47,7 +50,7 @@ public class MemberController {
                 ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
 
         return ResponseEntity.ok(ApiResponse.success("Members fetched",
-                memberService.getAll(PageRequest.of(page, size, sort))));
+                memberService.getAll(branchCode,PageRequest.of(page, size, sort))));
     }
 
     @GetMapping("/{id}")
@@ -99,6 +102,19 @@ public class MemberController {
             @RequestParam MemberStatus status) {
         return ResponseEntity.ok(ApiResponse.success("Member status updated",
                 memberService.updateStatus(id, status)));
+    }
+
+    @PatchMapping("/{id}/type")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
+    @Operation(summary = "Update member type: STUDENT,\n" +
+            "    TEACHER,\n" +
+            "    STAFF,\n" +
+            "    PARENT")
+    public ResponseEntity<ApiResponse<?>> updateType(
+            @PathVariable Long id,
+            @RequestParam MemberType memberType) {
+        return ResponseEntity.ok(ApiResponse.success("Member type updated",
+                memberService.updateType(id, memberType)));
     }
 
     @DeleteMapping("/{id}")

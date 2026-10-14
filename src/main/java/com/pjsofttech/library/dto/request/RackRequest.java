@@ -17,6 +17,8 @@ public class RackRequest {
 
     @Size(max = 100)
     private String section;
+    private String floorSection;
+
 
     private Integer rowNumber;
 

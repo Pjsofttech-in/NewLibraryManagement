@@ -36,7 +36,7 @@ public class Member {
     @Column(name = "address", length = 300)
     private String address;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYear academicYear;
 
@@ -50,6 +50,11 @@ public class Member {
     @Column(nullable = false)
     @Builder.Default
     private MemberStatus status = MemberStatus.ACTIVE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_type", nullable = false)
+    @Builder.Default
+    private MemberType memberType = MemberType.STUDENT;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -66,4 +71,8 @@ public class Member {
     @OneToMany(mappedBy = "member",/* cascade = CascadeType.ALL, */fetch = FetchType.LAZY)
     @Builder.Default
     private List<Reservation> reservations = new ArrayList<>();
+
+    // In each Entity class add:
+    @Column(name = "branch_code")
+    private String branchCode;
 }

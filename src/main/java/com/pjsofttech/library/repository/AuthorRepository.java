@@ -10,4 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface AuthorRepository extends JpaRepository<Author, Long> {
     Page<Author> findByNameContainingIgnoreCase(String name, Pageable pageable);
     boolean existsByNameIgnoreCase(String name);
+    Page<Author> findAllByBranchCode(String branchCode, Pageable pageable);
+
+    long countByBranchCode(String branchCode);
 }
