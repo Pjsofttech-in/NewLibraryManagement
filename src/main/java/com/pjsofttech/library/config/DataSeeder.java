@@ -496,6 +496,8 @@ public class DataSeeder implements CommandLineRunner {
 
         LocalDate baseIssue = LocalDate.of(2024, 7, 1);
 
+
+
         for (int i = 0; i < scenarios.length; i++) {
             int[] s = scenarios[i];
             Member member = members.get(s[0]);
@@ -504,6 +506,8 @@ public class DataSeeder implements CommandLineRunner {
 
             BookCopy copy = findAvailableCopy(book);
             if (copy == null) continue;
+
+
 
             LocalDate issueDate = baseIssue.plusDays(i * 10L);
             LocalDate dueDate = issueDate.plusDays(year.getLoanDurationDays());
@@ -551,29 +555,111 @@ public class DataSeeder implements CommandLineRunner {
     //     Mix of ACTIVE, OVERDUE, LOST; pending/waived fines
     // =========================================================================
 
+//    private void seedCurrentLoansAndFines(AcademicYear year, List<Member> members,
+//                                          List<Book> books, List<User> librarians) {
+//        // [memberIdx, bookIdx, loanStatusCode, overdueDays, fineStatusCode]
+//        // loanStatusCode: 0=ACTIVE, 1=OVERDUE, 2=LOST
+//        // fineStatusCode: 0=none, 1=PENDING, 2=WAIVED
+//        int[][] scenarios = {
+//                {0,  0,  0,  0, 0},   // active, no fine
+//                {1,  1,  0,  0, 0},   // active, no fine
+//                {2,  2,  0,  0, 0},   // active, no fine
+//                {3,  3,  1,  8, 1},   // overdue, pending fine
+//                {4,  4,  1,  5, 1},   // overdue, pending fine
+//                {5,  5,  1, 12, 2},   // overdue, waived fine
+//                {6,  6,  1,  3, 1},   // overdue, pending fine
+//                {7,  7,  2, 20, 1},   // lost, pending fine
+//                {8,  8,  2, 25, 2},   // lost, waived fine
+//                {9,  9,  0,  0, 0},   // active, no fine
+//                {0, 10,  1,  6, 1},   // member 0 second loan overdue
+//                {1, 11,  0,  0, 0},   // member 1 second loan active
+//        };
+//
+//        LocalDate baseIssue = LocalDate.of(2025, 7, 1);
+//        // "Today" for this seeder context is always in the 2025-26 year
+//        LocalDate today = LocalDate.of(2026, 4, 15);
+//
+//        for (int i = 0; i < scenarios.length; i++) {
+//            int[] s = scenarios[i];
+//            Member member = members.get(s[0]);
+//            if (member.getStatus() != MemberStatus.ACTIVE) continue;
+//
+//            Book book = books.get(s[1]);
+//            int loanCode = s[2];
+//            int overdueDays = s[3];
+//            int fineCode = s[4];
+//
+//            BookCopy copy = findAvailableCopy(book);
+//            if (copy == null) continue;
+//
+//            LoanStatus loanStatus = loanCode == 0 ? LoanStatus.ACTIVE
+//                    : loanCode == 1 ? LoanStatus.OVERDUE
+//                      : LoanStatus.LOST;
+//
+//            LocalDate issueDate = baseIssue.plusDays(i * 8L);
+//            LocalDate dueDate = issueDate.plusDays(year.getLoanDurationDays());
+//
+//            CopyStatus copyStatus = loanStatus == LoanStatus.LOST ? CopyStatus.LOST : CopyStatus.ISSUED;
+//            copy.setStatus(copyStatus);
+//            bookCopyRepository.save(copy);
+//
+//            Loan loan = loanRepository.save(Loan.builder()
+//                    .member(member).bookCopy(copy).academicYear(year)
+//                    .issueDate(issueDate).dueDate(dueDate)
+//                    .status(loanStatus)
+//                    .renewedCount(i % 3)
+//                    .issuedBy(librarians.get(i % librarians.size()).getEmail())
+//                            .branchCode(BRANCH_A)
+//                    .build());
+//
+//            book.setAvailableCopies(Math.max(0, book.getAvailableCopies() - 1));
+//            bookRepository.save(book);
+//
+//            if (overdueDays > 0 && fineCode != 0) {
+//                BigDecimal finePerDay = year.getFinePerDay();
+//                BigDecimal total = finePerDay.multiply(BigDecimal.valueOf(overdueDays));
+//                FineStatus fineStatus = fineCode == 1 ? FineStatus.PENDING : FineStatus.WAIVED;
+//
+//                Fine.FineBuilder fb = Fine.builder()
+//                        .loan(loan).overdueDays(overdueDays)
+//                        .finePerDay(finePerDay).totalAmount(total)
+//                        .branchCode(BRANCH_A)
+//                        .status(fineStatus);
+//
+//                if (fineStatus == FineStatus.WAIVED) {
+//                    fb.waivedBy("robert@library.com")
+//                            .waiveReason("Waived on librarian discretion");
+//                }
+//                entityManager.persist(fb.build());
+//            }
+//        }
+//        entityManager.flush();
+//    }
+
     private void seedCurrentLoansAndFines(AcademicYear year, List<Member> members,
                                           List<Book> books, List<User> librarians) {
-        // [memberIdx, bookIdx, loanStatusCode, overdueDays, fineStatusCode]
+
         // loanStatusCode: 0=ACTIVE, 1=OVERDUE, 2=LOST
         // fineStatusCode: 0=none, 1=PENDING, 2=WAIVED
+        // desiredOverdueDays: how many days overdue we want (only used for OVERDUE/LOST)
         int[][] scenarios = {
-                {0,  0,  0,  0, 0},   // active, no fine
-                {1,  1,  0,  0, 0},   // active, no fine
-                {2,  2,  0,  0, 0},   // active, no fine
-                {3,  3,  1,  8, 1},   // overdue, pending fine
-                {4,  4,  1,  5, 1},   // overdue, pending fine
-                {5,  5,  1, 12, 2},   // overdue, waived fine
-                {6,  6,  1,  3, 1},   // overdue, pending fine
-                {7,  7,  2, 20, 1},   // lost, pending fine
-                {8,  8,  2, 25, 2},   // lost, waived fine
-                {9,  9,  0,  0, 0},   // active, no fine
+                // memberIdx, bookIdx, loanStatus, desiredOverdue, fineStatus
+                {0,  0,  0,  0, 0},   // active
+                {1,  1,  0,  0, 0},   // active
+                {2,  2,  0,  0, 0},   // active
+                {3,  3,  1,  8, 1},   // overdue 8 days → PENDING
+                {4,  4,  1,  5, 1},   // overdue 5 days → PENDING
+                {5,  5,  1, 12, 2},   // overdue 12 days → WAIVED
+                {6,  6,  1,  3, 1},   // overdue 3 days → PENDING
+                {7,  7,  2, 20, 1},   // lost, 20 days overdue → PENDING
+                {8,  8,  2, 25, 2},   // lost, 25 days overdue → WAIVED
+                {9,  9,  0,  0, 0},   // active
                 {0, 10,  1,  6, 1},   // member 0 second loan overdue
                 {1, 11,  0,  0, 0},   // member 1 second loan active
         };
 
-        LocalDate baseIssue = LocalDate.of(2025, 7, 1);
-        // "Today" for this seeder context is always in the 2025-26 year
-        LocalDate today = LocalDate.of(2026, 4, 15);
+        LocalDate today = LocalDate.now();          // ← always real today
+        int loanDays = year.getLoanDurationDays();  // 14 in your config
 
         for (int i = 0; i < scenarios.length; i++) {
             int[] s = scenarios[i];
@@ -582,43 +668,69 @@ public class DataSeeder implements CommandLineRunner {
 
             Book book = books.get(s[1]);
             int loanCode = s[2];
-            int overdueDays = s[3];
+            int desiredOverdue = s[3];
             int fineCode = s[4];
 
             BookCopy copy = findAvailableCopy(book);
             if (copy == null) continue;
 
-            LoanStatus loanStatus = loanCode == 0 ? LoanStatus.ACTIVE
-                    : loanCode == 1 ? LoanStatus.OVERDUE
-                      : LoanStatus.LOST;
+            LoanStatus loanStatus = switch (loanCode) {
+                case 1 -> LoanStatus.OVERDUE;
+                case 2 -> LoanStatus.LOST;
+                default -> LoanStatus.ACTIVE;
+            };
 
-            LocalDate issueDate = baseIssue.plusDays(i * 8L);
-            LocalDate dueDate = issueDate.plusDays(year.getLoanDurationDays());
+            // Calculate realistic dates so overdueDays match what FineService will compute
+            LocalDate issueDate;
+            LocalDate dueDate;
 
-            CopyStatus copyStatus = loanStatus == LoanStatus.LOST ? CopyStatus.LOST : CopyStatus.ISSUED;
+            if (loanStatus == LoanStatus.ACTIVE) {
+                // Issued recently, still within loan period
+                issueDate = today.minusDays(loanDays / 2);
+                dueDate   = issueDate.plusDays(loanDays);
+            } else {
+                // Make the book exactly "desiredOverdue" days overdue today
+                dueDate   = today.minusDays(desiredOverdue);
+                issueDate = dueDate.minusDays(loanDays);
+            }
+
+            CopyStatus copyStatus = (loanStatus == LoanStatus.LOST)
+                    ? CopyStatus.LOST
+                    : CopyStatus.ISSUED;
+
             copy.setStatus(copyStatus);
             bookCopyRepository.save(copy);
 
             Loan loan = loanRepository.save(Loan.builder()
-                    .member(member).bookCopy(copy).academicYear(year)
-                    .issueDate(issueDate).dueDate(dueDate)
+                    .member(member)
+                    .bookCopy(copy)
+                    .academicYear(year)
+                    .issueDate(issueDate)
+                    .dueDate(dueDate)
                     .status(loanStatus)
                     .renewedCount(i % 3)
                     .issuedBy(librarians.get(i % librarians.size()).getEmail())
-                            .branchCode(BRANCH_A)
+                    .branchCode(BRANCH_A)
                     .build());
 
             book.setAvailableCopies(Math.max(0, book.getAvailableCopies() - 1));
             bookRepository.save(book);
 
-            if (overdueDays > 0 && fineCode != 0) {
+            // Create fine only when needed
+            if (desiredOverdue > 0 && fineCode != 0) {
+                long realOverdueDays = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
+                if (realOverdueDays <= 0) continue;
+
                 BigDecimal finePerDay = year.getFinePerDay();
-                BigDecimal total = finePerDay.multiply(BigDecimal.valueOf(overdueDays));
-                FineStatus fineStatus = fineCode == 1 ? FineStatus.PENDING : FineStatus.WAIVED;
+                BigDecimal total = finePerDay.multiply(BigDecimal.valueOf(realOverdueDays));
+
+                FineStatus fineStatus = (fineCode == 1) ? FineStatus.PENDING : FineStatus.WAIVED;
 
                 Fine.FineBuilder fb = Fine.builder()
-                        .loan(loan).overdueDays(overdueDays)
-                        .finePerDay(finePerDay).totalAmount(total)
+                        .loan(loan)
+                        .overdueDays((int) realOverdueDays)
+                        .finePerDay(finePerDay)
+                        .totalAmount(total)
                         .branchCode(BRANCH_A)
                         .status(fineStatus);
 
@@ -626,6 +738,7 @@ public class DataSeeder implements CommandLineRunner {
                     fb.waivedBy("robert@library.com")
                             .waiveReason("Waived on librarian discretion");
                 }
+
                 entityManager.persist(fb.build());
             }
         }

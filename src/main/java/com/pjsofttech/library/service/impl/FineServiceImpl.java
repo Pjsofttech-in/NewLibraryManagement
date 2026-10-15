@@ -35,6 +35,10 @@ public class FineServiceImpl implements FineService {
     @Override
     @Transactional
     public void createFine(Loan loan) {
+        // Only calculate for active (not yet returned) loans
+        if (loan.getReturnDate() != null) {
+            return;
+        }
         LocalDate today = LocalDate.now();
         if (loan.getDueDate() == null || !loan.getDueDate().isBefore(today)) {
             return;
@@ -48,10 +52,21 @@ public class FineServiceImpl implements FineService {
         if (overdueDays <= 0) {
             return;
         }
+
+        // Prefer AcademicYear rate if available
+        BigDecimal rate = finePerDay; // fallback
+        if (loan.getAcademicYear() != null && loan.getAcademicYear().getFinePerDay() != null) {
+            rate = loan.getAcademicYear().getFinePerDay();
+        }
+
         Optional<Fine> existingFine = fineRepository.findByLoanId(loan.getId());
 
         if (existingFine.isPresent()) {
             Fine fine = existingFine.get();
+            // Do not modify already settled fines
+            if (fine.getStatus() != FineStatus.PENDING) {
+                return;
+            }
 
             // Update dynamically
             fine.setOverdueDays((int) overdueDays);
@@ -59,6 +74,7 @@ public class FineServiceImpl implements FineService {
             fine.setTotalAmount(
                     finePerDay.multiply(BigDecimal.valueOf(overdueDays))
             );
+
 
             fineRepository.save(fine);
 
