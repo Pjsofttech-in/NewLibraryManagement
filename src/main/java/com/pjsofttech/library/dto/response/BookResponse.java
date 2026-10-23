@@ -1,7 +1,10 @@
 package com.pjsofttech.library.dto.response;
 
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -14,6 +17,7 @@ public class BookResponse {
     private String description;
     private Integer publicationYear;
     private String language;
+    private BigDecimal price;
     private PublisherResponse publisher;
     private Integer totalCopies;
     private Integer availableCopies;

@@ -1,7 +1,10 @@
 package com.pjsofttech.library.dto.request;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
@@ -21,6 +24,8 @@ public class BookRequest {
     @Min(value = 1000, message = "Publication year must be valid")
     @Max(value = 2100, message = "Publication year must be valid")
     private Integer publicationYear;
+
+    private BigDecimal price;
 
     @Size(max = 50)
     private String language;

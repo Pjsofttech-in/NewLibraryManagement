@@ -68,6 +68,7 @@ public class BookServiceImpl implements BookService {
                 .description(request.getDescription())
                 .publicationYear(request.getPublicationYear())
                 .language(request.getLanguage())
+                .price(request.getPrice())
                 .publisher(publisherRepository.findById(request.getPublisherId())
                         .orElseThrow(()->new RuntimeException("Publisher Not Found")))
                 .build();
@@ -114,6 +115,7 @@ public class BookServiceImpl implements BookService {
         book.setDescription(request.getDescription());
         book.setPublicationYear(request.getPublicationYear());
         book.setLanguage(request.getLanguage());
+        book.setPrice(request.getPrice());
         book.setPublisher(publisherRepository.findById(request.getPublisherId()).orElseThrow(()->new RuntimeException("Publisher Not Found")));
 
         if (request.getCategoryId() != null) {
@@ -219,6 +221,7 @@ public class BookServiceImpl implements BookService {
                         .id(a.getId()).name(a.getName())
                         .biography(a.getBiography())
                         .nationality(a.getNationality())
+
                         .build())
                 .collect(Collectors.toSet());
 
@@ -239,6 +242,7 @@ public class BookServiceImpl implements BookService {
                 .totalCopies(b.getTotalCopies())
                 .availableCopies(b.getAvailableCopies())
                 .category(catResp).authors(authorResponses)
+                .price(b.getPrice())
                 .createdAt(b.getCreatedAt()).updatedAt(b.getUpdatedAt())
                 .build();
     }
